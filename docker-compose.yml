@@ -1,0 +1,60 @@
+version: "3.3"
+
+services:
+  orthanc:
+    hostname: orthanc
+    container_name: orthanc
+    image: orthancteam/orthanc
+    volumes:
+      - ./plugins.json:/etc/orthanc/plugins.json
+    ports:
+      - 8042:8042
+      - 4242:4242
+    environment:
+      VERBOSE_ENABLED: true
+    networks:
+      - "orthanc-network"
+    depends_on:
+      - postgres-server
+
+  viewer:
+    container_name: ohif-viewer
+    image: ohif/app:latest
+    volumes:
+      - ./viewer-config.js:/usr/share/nginx/html/app-config.js
+    ports:
+      - "3000:80"
+    networks:
+      - "orthanc-network"
+    
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - orthanc
+    networks:
+      - "orthanc-network"
+
+  postgres-server:
+    container_name: postgres
+    image: postgres:14
+    restart: unless-stopped
+    command: >
+      -c max-wal-size=2GB
+    environment:
+      POSTGRES_DB: orthanc
+      POSTGRES_USER: orthanc
+      POSTGRES_PASSWORD: orthanc
+    ports:
+      - 5432:5432
+    networks:
+      - "orthanc-network"
+
+networks:
+  orthanc-network:
+    name: orthanc-network
+    driver: bridge
