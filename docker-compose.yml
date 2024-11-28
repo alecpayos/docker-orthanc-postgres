@@ -6,7 +6,7 @@ services:
     container_name: orthanc
     image: orthancteam/orthanc
     volumes:
-      - ./plugins.json:/etc/orthanc/plugins.json
+      - ./orthanc-plugins.json:/etc/orthanc/plugins.json
     ports:
       - 8042:8042
       - 4242:4242
